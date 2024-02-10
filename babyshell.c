@@ -31,8 +31,8 @@ DISPLAY IMAGES WITH OPENGL??????????
 */
 
 
-
-
+void cd(char *args[]);
+char *getpath(void);
 extern char **environ;
 
 int main(int argc, char **argv) {
@@ -40,18 +40,28 @@ int main(int argc, char **argv) {
   char buf[MAX_BUFFER];
   char *args[MAX_ARGS];
   char **arg;
-  char *prompt = "[}";
+  printf("\033[2J\033[H"); 
+  printf("    **************************\n"
+         "    *        MY SHELL        *\n"
+         "    *                        *\n"
+         "    *         use at         *\n"
+         "    *        own risk        *\n"
+         "    *                        *\n"
+         "    **************************\n"
+  );
+
 
 
   while(!feof(stdin)){
+    char *prompt  = getpath();
     printf ("%s", prompt);
     if (fgets(buf, MAX_BUFFER, stdin)) {
-	arg = args;
-	*arg++ = strtok(buf, SEPARATORS);
+	    arg = args;
+	    *arg++ = strtok(buf, SEPARATORS);
 
-	while ((*arg++ = strtok(NULL, SEPARATORS)));
+   	while ((*arg++ = strtok(NULL, SEPARATORS)));
 
-	if (args[0]) {
+	  if (args[0]) {
 	  if (!strcmp(args[0], "clr")) {
             system("clear");
 	    continue;
@@ -71,7 +81,7 @@ int main(int argc, char **argv) {
         sprintf(directory_name, "./%s", argv[1]);
         DIR* dir = opendir(directory_name);
         if (dir == NULL) {
-          printf("You failed ypure a lopser youre nothing");
+          printf("You failed youre a loser youre nothing");
         }
         
         struct dirent *entity;
@@ -96,24 +106,62 @@ int main(int argc, char **argv) {
 	    continue;
 	  }
     if (!strcmp(args[0], "cd")) {
-        /*
-        / This needs to be fixed
-        */
-        char *dir = (char*)malloc(strlen(getenv("PWD")) + strlen(args[1]) + 2);
-        sprintf(dir, "%s/%s", strtok(getenv("PWD"), "="), args[1]);
-        setenv("PWD", dir, 1);
-
-
-        continue;
+      cd(args);
     }
-
-          if (!strcmp(args[0], "environ")) {
-            for (char **env = environ; *env != NULL; env++) {
-              printf("%s\n", *env);
+    if (!strcmp(args[0], "environ")) {
+      for (char **env = environ; *env != NULL; env++) {
+        printf("%s\n", *env);
 	    }
 	    continue;
 	  }
 	}
     }
+  }
+}
+
+
+
+char *getpath(void) {
+  char *user = strtok(getenv("USER"), "=");
+  char *delim = (char *)malloc(6 + strlen(user) + 2);
+  sprintf(delim, "/home/%s", user);
+  char *path = strstr(getenv("PWD"), delim) + strlen(delim);
+  char *prompt = (char *)malloc(sizeof(char) * 70);
+  sprintf(prompt,"%s ~%s\n[} ", user, path);
+
+  return prompt;
+}
+
+void cd(char *args[]) {
+  char *dir;
+  if (args[1]){
+    dir = (char*)malloc(strlen(getenv("PWD")) + strlen(args[1]) + 2);
+
+    if (!strcmp(args[1], "..")) {
+
+      char *copy = strdup(getenv("PWD"));
+
+      char *finalPos = strrchr(copy, '/');
+      if (finalPos != copy) {  //Ensure not root directory
+        *finalPos = '\0';
+      } else {
+        *(finalPos + 1) = '\0';
+      }
+      dir = copy;
+    }
+
+    else if (!strcmp(args[1], ".")) {
+      sprintf(dir, "%s", strtok(getenv("PWD"), "="));
+    }
+
+    else {
+      sprintf(dir, "%s/%s", strtok(getenv("PWD"), "="), args[1]);
+    }
+  }
+  else {
+    dir = getenv("HOME");
+  }
+  if (chdir(dir) || setenv("PWD", dir, 1)){
+    printf("You failed you lose you're nothing!\n");
   }
 }
