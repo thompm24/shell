@@ -32,6 +32,8 @@ DISPLAY IMAGES WITH OPENGL??????????
 
 
 void cd(char *args[]);
+void dir(char *args[]);
+
 char *getpath(void);
 extern char **environ;
 
@@ -70,39 +72,7 @@ int main(int argc, char **argv) {
             break;
 	  }
 	  if (!strcmp(args[0], "dir")) {
-    /*
-    / Add recursive dir (CodeVault video)
-    / Make it optional to print hidden directorys (check for .
-    */
-
-      if (args[1]) {
-
-        char *directory_name = (char *)malloc(sizeof(char) * 40);
-        sprintf(directory_name, "./%s", argv[1]);
-        DIR* dir = opendir(directory_name);
-        if (dir == NULL) {
-          printf("You failed youre a loser youre nothing");
-        }
-        
-        struct dirent *entity;
-
-        entity = readdir(dir);
-        while (entity != NULL) {
-          printf("%s\n", entity->d_name);
-          entity =readdir(dir);
-        }
-
-        closedir(dir);
-	    }
-      else {
-        DIR *dir = opendir(".");
-        struct dirent *entity;
-        entity = readdir(dir);
-        while (entity != NULL){
-          printf("%s\n", entity->d_name);
-          entity = readdir(dir);
-        }
-      }
+      dir(args);
 	    continue;
 	  }
     if (!strcmp(args[0], "cd")) {
@@ -163,5 +133,37 @@ void cd(char *args[]) {
   }
   if (chdir(dir) || setenv("PWD", dir, 1)){
     printf("You failed you lose you're nothing!\n");
+  }
+}
+
+void dir(char *args[]) {
+  if (args[1]) {
+    char *directory_name = (char *)malloc(sizeof(char) * 40);
+    sprintf(directory_name, "./%s", args[1]);
+    DIR* pdir = opendir(directory_name);
+    if (dir == NULL) {
+      printf("You failed youre a loser youre nothing");
+    }
+    
+    struct dirent *entity;
+    entity = readdir(pdir);
+
+    while (entity != NULL) {
+      printf("%s\n", entity->d_name);
+      entity =readdir(pdir);
+    }
+    closedir(pdir);
+	}
+  else {
+    DIR *pdir = opendir(".");
+    struct dirent *entity;
+    entity = readdir(pdir);
+    while (entity != NULL){
+      printf("%s\n", entity->d_name);
+      if (entity->d_type == DT_DIR) {
+        printf("newdir found\n");
+      }
+      entity = readdir(pdir);
+    }
   }
 }
