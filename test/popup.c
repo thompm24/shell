@@ -7,7 +7,6 @@
 int main(int argc, char *argv[]) {
   int nap = atoi(argv[1]);
 
-
   pid_t pid = fork();
 
   if (pid < 0) {
@@ -22,8 +21,7 @@ int main(int argc, char *argv[]) {
     wait(NULL);
     sleep(2);
     printf("%ld\n", start);
-    //fflush(stdout);
-  } 
+  }
 }
 
 
@@ -77,7 +75,7 @@ struct tm {
 char s[100] = strftime(s,100,"%A %B %d", cur_time);
 printf*("%s\n" s);
 Sunday March 06
- 
+
 %a 	Abbreviated weekday name 	Sun
 %A 	Full weekday name 	Sunday
 %b 	Abbreviated month name 	Mar

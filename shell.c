@@ -7,21 +7,25 @@
 #include <dirent.h>
 #include <sys/wait.h>
 
-typedef struct
+typedef struct Function Function;
+typedef struct BST BST;
+
+struct Function
 {
   char *name;
-  (void)(*pfunction)(char**);
-} Function;
+  void (*pfunction)(char**);
+  int value;
+  Function *left;
+  Function *right;
+};
 
-typedef struct
+
+struct BST
 {
-  Function map[256];
-} Hashmap;
+  Function *root;
+};
 
-Hashmap *gen_hashmap();
-
-//Checks if in hashmap and if not returns 0, if executed returns 1
-int search_and_execute(char *name);
+BST *gen_bst();
 
 
 //Handles signals like interruptions etc.
@@ -49,8 +53,12 @@ char *getprompt(void);
 extern char **environ;
 
 
-
-
+//bst bollocks
+void insert(Function *root, Function *new);
+int gen_hashvalue(char *fname);
+Function *new_function(char *name, void (*pfunction)(char**));
+int run(BST *tree, char *args[]);
+int search_and_execute(Function *root, char *fName, int value, char *args[]);
 
 void execute_file(char *args[]) {
 
@@ -174,45 +182,95 @@ void signalhandler(int sig)
   exit(1);
 }
 
-Hashmap *gen_hashmap() {
-  Hashmap *hm = (Hashmap *)malloc(sizeof(Hashmap));
+BST *gen_bst(void) {
+  BST *tree = (BST *)malloc(sizeof(BST));
 
-  hm->map = malloc(sizeof(Function) * 256);
+  tree->root = (Function*)malloc(sizeof(Function));
 
-  void(*shell_functions[])(char*) = {cd, dir};
-  char *string_functions = {"cd", "dir"};
+  void(*shell_functions[])(char**) = {&cd, &dir};
+  char *string_functions[] = {"cd", "dir"};
 
+  tree->root = new_function(string_functions[0], shell_functions[0]);
 
-  int i = 0;
-  while (i < sizeof(string_functions)/ sizeof(string_functionds[0])) {
-    hm->map[ gen_hashvalue(string_functions[i]) ] = gen_function(shell_functions[i], string_functions[i]);
+  int i = 1;
+  while (i < sizeof(string_functions)/ sizeof(string_functions[0])) {
+    insert(tree->root, new_function(string_functions[i], shell_functions[i]));
+    i++;
   }
-  return map;
+  return tree;
 }
+
+Function *new_function(char *fname, void (*pfunction)(char *argv[])) {
+  Function *new = (Function *)malloc(sizeof(Function));
+  new->name = fname;
+  new->value = gen_hashvalue(fname);
+  new->pfunction = pfunction;
+  return new;
+}
+
+void insert(Function *root, Function *new) {
+  if (new == NULL) {
+    printf("NEW FUNCTION IS EQUAL TO NULL YOU FAIL YOU LOSE\n");
+  }
+
+  if (root->value > new->value) {
+    if (root->left != NULL) {
+      insert(root->left, new);
+    }
+    else {
+      root->left = new;
+    }
+  }
+  if (root->value <= new->value) {
+    if (root->right != NULL) {
+      insert(root->right, new);
+    }
+    else {
+      root->right = new;
+    }
+  }
+}
+
+
+
+
+
+
 
 int gen_hashvalue(char *fName) {
   int hash = 0;
   int i = 0;
   while (i < strlen(fName)) {
-    hash += *fName[i];
-    i++
+    hash += fName[i];
+    i++;
   }
-  return (hash % 256);
+  return hash;
+}
+
+int run(BST *tree, char *args[]) {
+  return search_and_execute(tree->root, args[0], gen_hashvalue(args[0]), args);
 }
 
 
-/*
-int search_and_execute(char *fName) {
 
-  hm->map[gen_hashvalue(char *fName)]->pfunction();
-
-  Must be refined to make sure function is in hash map first and return 0 if not.
-
-  if not in hashmap:
-
-    our execute thing
-
+int search_and_execute(Function *root, char *fName, int value, char *args[]) {
+  if (root->value == value) {
+    if (!strcmp(root->name, fName)) {
+      root->pfunction(args);
+      return 1;
+    }
+    else {
+      return search_and_execute(root->right, fName, value, args);
+    }
+  }
+  else if (root->value < value) {
+    return search_and_execute(root->right, fName, value, args);
+  }
+  else if (root->value > value) {
+    return search_and_execute(root->left, fName, value, args);
+  }
+  return 0;
 }
-*/
+
 
 
