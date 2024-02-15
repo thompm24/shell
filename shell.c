@@ -212,7 +212,7 @@ void insert(Function *root, Function *new) {
   if (new == NULL) {
     printf("NEW FUNCTION IS EQUAL TO NULL YOU FAIL YOU LOSE\n");
   }
-
+  printf("Inserting");
   if (root->value > new->value) {
     if (root->left != NULL) {
       insert(root->left, new);
@@ -240,6 +240,8 @@ void insert(Function *root, Function *new) {
 int gen_hashvalue(char *fName) {
   int hash = 0;
   int i = 0;
+  printf("hello");
+  sleep(1);
   while (i < strlen(fName)) {
     hash += fName[i];
     i++;
@@ -248,18 +250,27 @@ int gen_hashvalue(char *fName) {
 }
 
 int run(BST *tree, char *args[]) {
-  return search_and_execute(tree->root, args[0], gen_hashvalue(args[0]), args);
+  printf("running\n");
+  return search_and_execute(tree->root, args[1], gen_hashvalue(args[1]), args);
 }
 
 
 
 int search_and_execute(Function *root, char *fName, int value, char *args[]) {
+  printf("root: %d %s\nwant: %d %s\n", root->value, root->name, value, fName);
+
   if (root->value == value) {
-    if (!strcmp(root->name, fName)) {
-      root->pfunction(args);
+    //printf("values definitely equal\n");
+    if (!strncmp(root->name, fName, strlen(root->name))) {
+      printf("search_and_execute succeeded");
+      root->pfunction(args);{
+      printf("!strcmp returns: %d for %s %s\n", (!strcmp(root->name, fName)), root->name, fName);
+      return search_and_execute(root->right, fName, value, args);
+    }
       return 1;
     }
     else {
+      printf("!strcmp returns: %d for %s %s\n", (!strcmp(root->name, fName)), root->name, fName);
       return search_and_execute(root->right, fName, value, args);
     }
   }
@@ -269,8 +280,6 @@ int search_and_execute(Function *root, char *fName, int value, char *args[]) {
   else if (root->value > value) {
     return search_and_execute(root->left, fName, value, args);
   }
+  printf("search_and_execute failed");
   return 0;
 }
-
-
-
