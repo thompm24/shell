@@ -7,16 +7,49 @@
 #include <dirent.h>
 #include <sys/wait.h>
 
+typedef struct
+{
+  char *name;
+  (void)(*pfunction)(char**);
+} Function;
 
+typedef struct
+{
+  Function map[256];
+} Hashmap;
+
+Hashmap *gen_hashmap();
+
+//Checks if in hashmap and if not returns 0, if executed returns 1
+int search_and_execute(char *name);
+
+
+//Handles signals like interruptions etc.
 void signalhandler(int sig);
-void cd(char *args[]);
-void dir(char *args[]);
 
+
+//Change Directory
+void cd(char *args[]);
+// If you do cd ../.. It appends them to prompt instead of removing files
+//Subfunction of cd for reversal
+char *cd_back(void);
+
+
+//Lists items inside directory
+void dir(char *args[]);
+//To do: Add option of flags to do long list or recursive
+
+// Handles execution of scripts or C files etc.
 void execute_file(char *args[]);
 
+//Gets prompt
 char *getprompt(void);
-char *cd_back(void);
+
+//Lists enviroment variables
 extern char **environ;
+
+
+
 
 
 void execute_file(char *args[]) {
@@ -140,3 +173,46 @@ void signalhandler(int sig)
   if (sig == 2) printf("Noooo come backkk dont sigint mee\n");
   exit(1);
 }
+
+Hashmap *gen_hashmap() {
+  Hashmap *hm = (Hashmap *)malloc(sizeof(Hashmap));
+
+  hm->map = malloc(sizeof(Function) * 256);
+
+  void(*shell_functions[])(char*) = {cd, dir};
+  char *string_functions = {"cd", "dir"};
+
+
+  int i = 0;
+  while (i < sizeof(string_functions)/ sizeof(string_functionds[0])) {
+    hm->map[ gen_hashvalue(string_functions[i]) ] = gen_function(shell_functions[i], string_functions[i]);
+  }
+  return map;
+}
+
+int gen_hashvalue(char *fName) {
+  int hash = 0;
+  int i = 0;
+  while (i < strlen(fName)) {
+    hash += *fName[i];
+    i++
+  }
+  return (hash % 256);
+}
+
+
+/*
+int search_and_execute(char *fName) {
+
+  hm->map[gen_hashvalue(char *fName)]->pfunction();
+
+  Must be refined to make sure function is in hash map first and return 0 if not.
+
+  if not in hashmap:
+
+    our execute thing
+
+}
+*/
+
+
