@@ -64,12 +64,25 @@ IF EXTRA TIME:
 int main(int argc, char **argv) {
 
   signal(SIGINT, signalhandler);
-
-
   BST *tree = gen_bst();
+
+
+
+
   char buf[MAX_BUFFER];
   char *args[MAX_ARGS];
   char **arg;
+
+  FILE *fptr;
+  if (argv[1]) {
+    fptr = fopen(argv[1], "r");
+  }
+  else {
+    fptr = stdin;
+  }
+
+
+  if (fptr == stdin) {
   printf("\033[2J\033[H");
   printf("    **************************\n"
     	 "    *        MY SHELL        *\n"
@@ -79,20 +92,22 @@ int main(int argc, char **argv) {
     	 "    *                        *\n"
     	 "    **************************\n\n\n"
         );
+  }
 
 
-  while(!feof(stdin))
+
+  while(!feof(fptr))
   {
-    printf("%s", getprompt());
-    if (fgets(buf, MAX_BUFFER, stdin))
+    if (fptr == stdin) {
+      printf("%s", getprompt());
+    }
+    if (fgets(buf, MAX_BUFFER, fptr))
     {
       arg = args;
       *arg++ = strtok(buf, SEPARATORS);
 
-     printf("%s\n", args[0]);
 
       while ((*arg++ = strtok(NULL, SEPARATORS)));
-        printf("%s\n", args[0]);
     /*  if (args[0])
       {
         if (!strcmp(args[0], "clr"))
@@ -128,6 +143,6 @@ int main(int argc, char **argv) {
 	    continue;
 	  }
       }
-    
-  
+
+
 }

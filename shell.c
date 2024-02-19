@@ -14,7 +14,6 @@ struct Function
 {
   char *name;
   void (*pfunction)(char**);
-  int value;
   Function *left;
   Function *right;
 };
@@ -58,7 +57,7 @@ void insert(Function *root, Function *new);
 int gen_hashvalue(char *fname);
 Function *new_function(char *name, void (*pfunction)(char**));
 int run(BST *tree, char *args[]);
-int search_and_execute(Function *root, char *fName, int value, char *args[]);
+int search_and_execute(Function *root, char *fName, char *args[]);
 
 void execute_file(char *args[]) {
 
@@ -79,12 +78,12 @@ void execute_file(char *args[]) {
 char *getprompt(void)
 {
   char *user = getenv("USER");
-  char *path = strstr(getenv("PWD"), getenv("HOME")) + strlen("HOME") + 2;
+  char *path = strstr(getenv("PWD"), getenv("USERNAME")) + strlen("USERNAME") + 1;
   char *indicator = ">";
 
   char *prompt = malloc(sizeof(char) * strlen(user) + strlen(path) + strlen(indicator) + 2);
 
-  sprintf(prompt, "%s ~%s\n%s", user, path, indicator);
+  sprintf(prompt, "%s ~/%s\n%s", user, path, indicator);
 
   return prompt;
 }
@@ -203,7 +202,6 @@ BST *gen_bst(void) {
 Function *new_function(char *fname, void (*pfunction)(char *argv[])) {
   Function *new = (Function *)malloc(sizeof(Function));
   new->name = fname;
-  new->value = gen_hashvalue(fname);
   new->pfunction = pfunction;
   return new;
 }
@@ -212,8 +210,10 @@ void insert(Function *root, Function *new) {
   if (new == NULL) {
     printf("NEW FUNCTION IS EQUAL TO NULL YOU FAIL YOU LOSE\n");
   }
-  printf("Inserting");
-  if (root->value > new->value) {
+
+  int compare = strcmp(new->name, root->name);
+
+  if (compare < 0) {
     if (root->left != NULL) {
       insert(root->left, new);
     }
@@ -221,7 +221,7 @@ void insert(Function *root, Function *new) {
       root->left = new;
     }
   }
-  if (root->value <= new->value) {
+  if (compare >= 0) {
     if (root->right != NULL) {
       insert(root->right, new);
     }
@@ -231,50 +231,27 @@ void insert(Function *root, Function *new) {
   }
 }
 
-
-
-
-
-
-
-int gen_hashvalue(char *fName) {
-  int hash = 0;
-  int i = 0;
-  printf("hello");
-  sleep(1);
-  while (i < strlen(fName)) {
-    hash += fName[i];
-    i++;
-  }
-  return hash;
-}
-
 int run(BST *tree, char *args[]) {
-  printf("running, here is fName: %s\n", args[0]);
-  return search_and_execute(tree->root, args[0], gen_hashvalue(args[0]), args);
+  return search_and_execute(tree->root, args[0], args);
 }
 
 
 
-int search_and_execute(Function *root, char *fName, int value, char *args[]) {
-  printf("root: %d %s\nwant: %d %s\n", root->value, root->name, value, fName);
+int search_and_execute(Function *root, char *fName, char *args[]) {
+  int compare= strcmp(fName, root->name);
 
-  if (root->value == value) {
-    if (!strncmp(root->name, fName, strlen(root->name))) {
-      printf("Yes hello this works I'd say, check output:\n");
-      root->pfunction(args);
-      return 1;
-    }
-    else {
-      return search_and_execute(root->right, fName, value, args);
-    }
+  if (!compare) {
+    root->pfunction(args);
+    return 1;
   }
-  else if (root->value < value) {
-    return search_and_execute(root->right, fName, value, args);
+  else if ((root->left == NULL) && (root->right == NULL)) {
+    return 0;
   }
-  else if (root->value > value) {
-    return search_and_execute(root->left, fName, value, args);
+  else if (compare >= 1) {
+    return search_and_execute(root->right, fName, args);
+  }
+  else if (compare < 0) {
+    return search_and_execute(root->left, fName, args);
   }
   printf("search_and_execute failed");
-  return 0;
 }

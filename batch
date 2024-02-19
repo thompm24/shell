@@ -1,0 +1,4 @@
+dir
+cd
+cd bin
+test.sh
