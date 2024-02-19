@@ -250,8 +250,8 @@ int gen_hashvalue(char *fName) {
 }
 
 int run(BST *tree, char *args[]) {
-  printf("running\n");
-  return search_and_execute(tree->root, args[1], gen_hashvalue(args[1]), args);
+  printf("running, here is fName: %s\n", args[0]);
+  return search_and_execute(tree->root, args[0], gen_hashvalue(args[0]), args);
 }
 
 
@@ -260,17 +260,12 @@ int search_and_execute(Function *root, char *fName, int value, char *args[]) {
   printf("root: %d %s\nwant: %d %s\n", root->value, root->name, value, fName);
 
   if (root->value == value) {
-    //printf("values definitely equal\n");
     if (!strncmp(root->name, fName, strlen(root->name))) {
-      printf("search_and_execute succeeded");
-      root->pfunction(args);{
-      printf("!strcmp returns: %d for %s %s\n", (!strcmp(root->name, fName)), root->name, fName);
-      return search_and_execute(root->right, fName, value, args);
-    }
+      printf("Yes hello this works I'd say, check output:\n");
+      root->pfunction(args);
       return 1;
     }
     else {
-      printf("!strcmp returns: %d for %s %s\n", (!strcmp(root->name, fName)), root->name, fName);
       return search_and_execute(root->right, fName, value, args);
     }
   }

@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
 
   signal(SIGINT, signalhandler);
 
+
+  BST *tree = gen_bst();
   char buf[MAX_BUFFER];
   char *args[MAX_ARGS];
   char **arg;
@@ -87,9 +89,11 @@ int main(int argc, char **argv) {
       arg = args;
       *arg++ = strtok(buf, SEPARATORS);
 
-      while ((*arg++ = strtok(NULL, SEPARATORS)));
+     printf("%s\n", args[0]);
 
-      if (args[0])
+      while ((*arg++ = strtok(NULL, SEPARATORS)));
+        printf("%s\n", args[0]);
+    /*  if (args[0])
       {
         if (!strcmp(args[0], "clr"))
 	{
@@ -116,13 +120,14 @@ int main(int argc, char **argv) {
             printf("%s\n", *env);
           }
           continue;
-        }
-        else
-        {
+        } */
+
+        if (!run(tree, args)) {
             execute_file(args);
+        }
 	    continue;
 	  }
       }
-    }
-  }
+    
+  
 }
