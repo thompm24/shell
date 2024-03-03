@@ -9,8 +9,7 @@
 
 #define MAX_BUFFER 1024
 #define MAX_ARGS 64
-#define SEPARATORS " \t\n"
-
+#define SEPARATORS " \ti
 
 
 /*
@@ -107,7 +106,7 @@ int main(int argc, char **argv) {
       *arg++ = strtok(buf, SEPARATORS);
 
 
-      while ((*arg++ = strtok(NULL, SEPARATORS)));
+      while ((*arg++ = strcmptrtok(NULL, SEPARATORS)));
     /*  if (args[0])
       {
         if (!strcmp(args[0], "clr"))
