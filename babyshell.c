@@ -9,7 +9,7 @@
 
 #define MAX_BUFFER 1024
 #define MAX_ARGS 64
-#define SEPARATORS " \ti
+#define SEPARATORS " \t\n"
 
 
 /*
@@ -94,7 +94,6 @@ int main(int argc, char **argv) {
   }
 
 
-
   while(!feof(fptr))
   {
     if (fptr == stdin) {
@@ -102,31 +101,17 @@ int main(int argc, char **argv) {
     }
     if (fgets(buf, MAX_BUFFER, fptr))
     {
+      if (strstr(buf, " &") != NULL) {
+        execute_file(args, 0);
+      }
+
       arg = args;
       *arg++ = strtok(buf, SEPARATORS);
 
 
-      while ((*arg++ = strcmptrtok(NULL, SEPARATORS)));
+      while ((*arg++ = strtok(NULL, SEPARATORS)));
     /*  if (args[0])
       {
-        if (!strcmp(args[0], "clr"))
-	{
-          printf("\033[2J\033[H");
-          continue;
-        }
-        if (!strcmp(args[0], "quit"))
-	{
-          break;
-        }
-        if (!strcmp(args[0], "dir"))
-	{
-          dir(args);
-          continue;
-        }
-        if (!strcmp(args[0], "cd")) {
-          cd(args);
-          continue;
-        }
         if (!strcmp(args[0], "environ"))
 	{
           for (char **env = environ; *env != NULL; env++)
@@ -137,7 +122,7 @@ int main(int argc, char **argv) {
         } */
 
         if (!run(tree, args)) {
-            execute_file(args);
+            execute_file(args ,1);
         }
 	    continue;
 	  }

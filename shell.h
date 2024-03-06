@@ -19,13 +19,21 @@ void cd(char *args[]);
 //Subfunction of cd for reversal
 char *cd_back(void);
 
-
 //Lists items inside directory
 void dir(char *args[]);
 //To do: Add option of flags to do long list or recursive
 
+//Exit shell
+void quit(char *args[]);
+
+//Clear terminal window
+void clr(char *args[]);
+
+//Print list of enviroment variables
+void environf(char *args[]);
+
 // Handles execution of scripts or C files etc.
-void execute_file(char *args[]);
+void execute_file(char *args[], int flag);
 
 //Gets prompt
 char *getprompt(void);

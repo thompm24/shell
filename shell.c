@@ -18,14 +18,12 @@ struct Function
   Function *right;
 };
 
-
 struct BST
 {
   Function *root;
 };
 
 BST *gen_bst();
-
 
 //Handles signals like interruptions etc.
 void signalhandler(int sig);
@@ -43,7 +41,7 @@ void dir(char *args[]);
 //To do: Add option of flags to do long list or recursive
 
 // Handles execution of scripts or C files etc.
-void execute_file(char *args[]);
+void execute_file(char *args[], int flag);
 
 //Gets prompt
 char *getprompt(void);
@@ -59,7 +57,7 @@ Function *new_function(char *name, void (*pfunction)(char**));
 int run(BST *tree, char *args[]);
 int search_and_execute(Function *root, char *fName, char *args[]);
 
-void execute_file(char *args[]) {
+void execute_file(char *args[], int flag) {
 
           pid_t pid = fork();
 
@@ -70,7 +68,9 @@ void execute_file(char *args[]) {
 	    execvp(args[0], &args[1]);
           }
 	  else {
-            wait(NULL);
+	    if (flag) {
+              wait(NULL);
+	    }
 	    kill(pid, SIGKILL);
 	  }
 }
@@ -78,8 +78,10 @@ void execute_file(char *args[]) {
 char *getprompt(void)
 {
   char *user = getenv("USER");
-  char *path = strstr(getenv("PWD"), getenv("USERNAME")) + strlen("USERNAME") + 1;
   char *indicator = ">";
+
+  char *path = malloc(100);
+  getcwd(path, 100);
 
   char *prompt = malloc(sizeof(char) * strlen(user) + strlen(path) + strlen(indicator) + 2);
 
@@ -175,6 +177,23 @@ void dir(char *args[]) {
   }
 }
 
+//Following commands take no arguments but take char** so they can go
+//go into the tree.
+void quit(char *args[])
+{
+  exit(EXIT_SUCCESS);
+}
+
+void clr(char *args[])
+{
+  printf("\033[2J");
+}
+
+void environf(char *args[])
+{
+  for (char **env = environ; *env != NULL; env++) printf("%s\n", *env);
+}
+
 void signalhandler(int sig)
 {
   if (sig == 2) printf("Noooo come backkk dont sigint mee\n");
@@ -186,8 +205,8 @@ BST *gen_bst(void) {
 
   tree->root = (Function*)malloc(sizeof(Function));
 
-  void(*shell_functions[])(char**) = {&cd, &dir};
-  char *string_functions[] = {"cd", "dir"};
+  void(*shell_functions[])(char**) = {&cd, &dir, &quit, &clr, &environf};
+  char *string_functions[] = {"cd", "dir", "quit", "clr", "environ"};
 
   tree->root = new_function(string_functions[0], shell_functions[0]);
 
@@ -235,10 +254,14 @@ int run(BST *tree, char *args[]) {
   return search_and_execute(tree->root, args[0], args);
 }
 
-
-
 int search_and_execute(Function *root, char *fName, char *args[]) {
-  int compare= strcmp(fName, root->name);
+  int compare;
+  if (root != NULL)
+  {
+    compare= strcmp(fName, root->name);
+  } else {
+    return 0;
+  }
 
   if (!compare) {
     root->pfunction(args);
@@ -255,3 +278,4 @@ int search_and_execute(Function *root, char *fName, char *args[]) {
   }
   printf("search_and_execute failed");
 }
+
