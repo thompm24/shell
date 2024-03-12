@@ -12,52 +12,6 @@
 #define SEPARATORS " \t\n"
 
 
-/*
-   TO DO:
-   I/O REDIRECTION
-
-   ERROR CHECK EVERYTHING, MALLOC, FOPENS ETC.
-   MANUAL
-
-   MAKEFILE
-
-
-
-IF EXTRA TIME:
-   OPTIONS FOR LONG LS AND RECURISVE
-
-   ADD PIPE AND GREP
-
-   SEND HTTP REQUESTS?
-
-   MAKE COMPRESSION ALGORITHM SQUISH SQUASH DESQISH DESQUASH
-
-   DISPLAY IMAGES WITH OPENGL?????????? who knows
-
-
-
-  DONE:
-  FUNCTIONS:
-
-   PUT POINTERS TO FUNCTIONS IN A HASH MAP AND CALL THEM THAT WAY, ALL ARE (void)(*pfunction)(char**)
-
-   BATCHFILE EXECUTION:
-     ./baby full_of_commands.txt
-
-
-   ../../.. APPENDS TO CWD PART OF PROMPT?
-
-   ADD & TO MAKE BACKGROUND PROCESS
-
-    CD, DIR, LS, ENVIRON AND EXECUTE FILES IN SEPARATE PROCESS
-
-    FIXED ISSUE WITH CHILD PROCESS READING MAIN BY MAKING HEADER FILE TO CONTAIN FORK
-
-    DYNAMIC PROMPT
-*/
-
-
-//////////////////////////////////////////////////////////////////
 int get_argc(char **args) {
   int length = 0;
   while (args[length] != NULL)
@@ -127,6 +81,10 @@ int check_redirection(char **args, int length) {
 }
 
 
+
+
+
+
 int restore_io(FILE *og_in, FILE *og_out, FILE *in, FILE *out)
 {
   fclose(in);
@@ -135,15 +93,9 @@ int restore_io(FILE *og_in, FILE *og_out, FILE *in, FILE *out)
   freopen(NULL, "w", og_out);
 }
 
-//////////////////////////////////////////////
-
-
-
-
 int main(int argc, char **argv) {
 
   signal(SIGINT, signalhandler);
-  BST *tree = gen_bst();
 
 
   char buf[MAX_BUFFER];
@@ -153,16 +105,20 @@ int main(int argc, char **argv) {
   FILE *original_stdout = freopen(NULL, "w", stdout);
   FILE *original_stdin = freopen(NULL, "r", stdin);
 
+
   FILE *fptr;
-  if (argv[1]) {
+  if (argv[1])
+  {
     fptr = fopen(argv[1], "r");
   }
-  else {
+  else
+  {
     fptr = stdin;
   }
 
 
-  if (fptr == stdin) {
+  if (fptr == stdin)
+  {
   printf("\033[2J\033[H");
   printf("    **************************\n"
     	 "    *        MY SHELL        *\n"
@@ -177,30 +133,32 @@ int main(int argc, char **argv) {
 
   while(!feof(fptr))
   {
-    if (fptr == stdin) {
+    if (fptr == stdin)
+    {
       printf("%s", get_prompt());
     }
     if (fgets(buf, MAX_BUFFER, fptr))
     {
-      if (strstr(buf, " &") != NULL) {
+      if (strstr(buf, " &") != NULL)
+      {
         execute_file(args, 0);
       }
 
       arg = args;
       *arg++ = strtok(buf, SEPARATORS);
-
-
       while ((*arg++ = strtok(NULL, SEPARATORS)));
+
+
       check_redirection(args, get_argc(args));
 
+      /*
         if (!run(tree, args)) {
             execute_file(args ,1);
         }
 	    continue;
 	  }
-      }
-
-      restore_io(original_stdin, original_stdout, stdin, stdout);
-
-
+      }*/
+    }
+  }
 }
+

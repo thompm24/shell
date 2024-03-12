@@ -28,7 +28,6 @@ BST *gen_bst();
 //Handles signals like interruptions etc.
 void signalhandler(int sig);
 
-
 //Change Directory
 void cd(char *args[]);
 // If you do cd ../.. It appends them to prompt instead of removing files
@@ -44,7 +43,7 @@ void dir(char *args[]);
 void execute_file(char *args[], int flag);
 
 //Gets prompt
-char *getprompt(void);
+char *get_prompt(void);
 
 //Lists enviroment variables
 extern char **environ;
@@ -75,7 +74,7 @@ void execute_file(char *args[], int flag) {
 	  }
 }
 
-char *getprompt(void)
+char *get_prompt(void)
 {
   char *user = getenv("USER");
   char *indicator = ">";
@@ -85,7 +84,7 @@ char *getprompt(void)
 
   char *prompt = malloc(sizeof(char) * strlen(user) + strlen(path) + strlen(indicator) + 2);
 
-  sprintf(prompt, "%s ~/%s\n%s", user, path, indicator);
+  sprintf(prompt, "%s ~/%s\n%s", user, strstr(path, user) + strlen(user) + 1, indicator);
 
   return prompt;
 }
