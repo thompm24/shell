@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include "shell.h"
 
 #define MAX_BUFFER 1024
@@ -15,12 +16,16 @@
 /*
    TO DO:
    I/O REDIRECTION
+       dup2 implmentation
+       refactor args after removion something for i/o like ><&>>
+
 
    ERROR CHECK EVERYTHING, MALLOC, FOPENS ETC.
    MANUAL
 
    MAKEFILE
 
+   Peer reviewed sources
 
 
 IF EXTRA TIME:
@@ -69,46 +74,48 @@ int get_argc(char **args) {
 
 int redirect_output_truncate(char *file_name)
 {
-  if (freopen(file_name, "w", stdout) != NULL)
-  {
-    return 1;
+  int redirect_fd = open(file_name, O_CREAT | O_TRUNC | O_WRONLY, 0777);
+  if (redirect_fd == -1) {
+    printf("Error encountered trying to open '%s'\n", file_name);
   }
-  else
+  if (dup2(redirect_fd, STDOUT_FILENO) == -1)
   {
-    printf("output redirection failed\n");
-    return 0;
+    printf("Error encountered trying to redirect standard output\n");
   }
+  close(redirect_fd);
 }
 
 int redirect_output_append(char *file_name)
 {
-  if (freopen(file_name, "a", stdout) != NULL)
-  {
-    return 1;
+  int redirect_fd = open(file_name, O_CREAT | O_APPEND | O_WRONLY, 0777);
+  if (redirect_fd == -1) {
+    printf("Error encountered trying to open '%s'\n", file_name);
   }
-  else
+  if (dup2(redirect_fd, STDOUT_FILENO) == -1)
   {
-    printf("output redirection failed\n");
+    printf("Failed redirecting standard output\n");
   }
+  close(redirect_fd);
 }
 
 
 
 int redirect_input(char *file_name)
 {
-  if (freopen(file_name, "r", stdin) != NULL)
-  {
-    return 1;
+  int redirect_fd = open(file_name, O_RDONLY, 0777);
+  if (redirect_fd == -1) {
+    printf("Error encountered trying to open '%s'\n", file_name);
   }
-  else
+  if (dup2(redirect_fd, STDIN_FILENO) == -1)
   {
-    printf("input redirection failed\n");
+    printf("Error redirecting standard input");
   }
+  close(redirect_fd);
 }
 
 int check_redirection(char **args, int length) {
   int i = 0;
-  while (i < length)
+  while (i < length - 1)	//length - 1 because we only want to run these functions if there is a file name after character.
   {
     if (!strcmp(args[i], ">"))
     {
@@ -127,12 +134,12 @@ int check_redirection(char **args, int length) {
 }
 
 
-int restore_io(FILE *og_in, FILE *og_out, FILE *in, FILE *out)
+int restore_io(int og_in, int og_out)
 {
-  fclose(in);
-  fclose(out);
-  freopen(NULL, "r", og_in);
-  freopen(NULL, "w", og_out);
+  dup2(og_in, STDIN_FILENO);
+  close(og_in);
+  dup2(og_out, STDOUT_FILENO);
+  close(og_out);
 }
 
 //////////////////////////////////////////////
@@ -150,8 +157,8 @@ int main(int argc, char **argv) {
   char *args[MAX_ARGS];
   char **arg;
 
-  FILE *original_stdout = freopen(NULL, "w", stdout);
-  FILE *original_stdin = freopen(NULL, "r", stdin);
+  int original_stdout = dup(STDOUT_FILENO);
+  int original_stdin = dup(STDIN_FILENO);
 
   FILE *fptr;
   if (argv[1]) {
@@ -177,7 +184,8 @@ int main(int argc, char **argv) {
 
   while(!feof(fptr))
   {
-    if (fptr == stdin) {
+    if (fptr == stdin)
+    {
       printf("%s", get_prompt());
     }
     if (fgets(buf, MAX_BUFFER, fptr))
@@ -193,14 +201,12 @@ int main(int argc, char **argv) {
       while ((*arg++ = strtok(NULL, SEPARATORS)));
       check_redirection(args, get_argc(args));
 
-        if (!run(tree, args)) {
-            execute_file(args ,1);
-        }
-	    continue;
-	  }
+      if (!run(tree, args))
+      {
+        execute_file(args ,1);
       }
-
-      restore_io(original_stdin, original_stdout, stdin, stdout);
-
-
+      restore_io(original_stdin, original_stdout);
+      continue;
+    }
+  }
 }
